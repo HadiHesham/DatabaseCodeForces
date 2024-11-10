@@ -18,6 +18,7 @@ const pool = mysql.createPool({
     database: 'ProgContests',
     waitForConnections: true,
     connectionLimit: 10,
+    connectTimeout: 429296729,
     queueLimit: 0
 });
 
@@ -56,16 +57,12 @@ app.get('/api/Q52', async (req, res) => {
 app.get('/api/Q6', async (req, res) => {
     try {
         const [rows, fields] = await pool.query(`
-        SELECT main.Screen_Name, main.TotalScore
-FROM (
-    SELECT Contestant.Screen_Name, SUM(ContestantContest.Score) as TotalScore
-    FROM Contestant
-    INNER JOIN ContestantContest ON Contestant.Screen_Name = ContestantContest.Screen_Name
-    GROUP BY Contestant.Screen_Name
-) AS main
-ORDER BY main.TotalScore DESC
-LIMIT 10;
-
+        SELECT Contestant.Screen_Name, SUM(ContestantContest.Score) AS TotalScore
+        FROM Contestant
+        INNER JOIN ContestantContest ON Contestant.Screen_Name = ContestantContest.Screen_Name
+        GROUP BY Contestant.Screen_Name
+        ORDER BY TotalScore DESC
+        LIMIT 10;        
         `);
         res.json(rows);
     } catch (error) {
@@ -73,6 +70,7 @@ LIMIT 10;
         res.status(500).send('Server error');
     }
 });
+
 
 app.get('/api/Q8', async (req, res) => {
     try {
